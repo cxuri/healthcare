@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "657559847983",
+    "project_id": "healthcare-bf852",
+    "storage_bucket": "healthcare-bf852.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:657559847983:android:5ea0a678e5593dae8772da",
+        "android_client_info": {
+          "package_name": "com.safeplayai.healthcare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "657559847983-01p958aanfc0aet0aqtnnfk56h951n0i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.safeplayai.healthcare",
+            "certificate_hash": "2d1863448d59ccc779b2171647f435c58550cc78"
+          }
+        },
+        {
+          "client_id": "657559847983-k2eilef1n9l3rcth9us177nij01b371k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1lNMnXrKoA57eiFXsU1z3im97yrtoitk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "657559847983-k2eilef1n9l3rcth9us177nij01b371k.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "657559847983-8lhjab5phu39j0uishds9eueueolvttn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.safeplayai.healthcare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
