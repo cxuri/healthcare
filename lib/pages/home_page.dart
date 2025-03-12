@@ -1,171 +1,187 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:healthcare/services/auth_service.dart'; // Import AuthService for sign-out
+import 'package:healthcare/services/auth_service.dart';
+import 'hospitals_page.dart';
+import 'medicines_page.dart';
+import 'profile_page.dart';
+import 'book_appointment.dart';
+import 'my_bookings.dart';
+import 'my_appointments.dart';
+import 'create_profile.dart'; // Import CreateProfilePage
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class HomeScreen extends StatelessWidget {
-  final AuthService _authService = AuthService(); // Instance of AuthService
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final AuthService _authService = AuthService();
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = [
+    HomePage(),
+    MyBookingsPage(),
+    MyAppointmentsPage(),
+  ];
+
+  void _onNavBarTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final User? user =
-        FirebaseAuth.instance.currentUser; // Get the current user
+    return Scaffold(
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTapped,
+        selectedItemColor: Colors.green.shade600,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: true,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'My Bookings'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'My Appointments'),
+        ],
+      ),
+    );
+  }
+}
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _isProfileCreated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfProfileExists();
+  }
+
+  // Function to check if the user's profile exists
+  void _checkIfProfileExists() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return;
+    }
+
+    // Fetch user profile from Firestore
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+
+    // Update the profileCreated flag based on whether the document exists
+    setState(() {
+      _isProfileCreated = snapshot.exists;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Home'),
+          backgroundColor: Colors.green.shade600,
+        ),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/auth');
+            },
+            child: const Text('Please login first'),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
-        title: Text('Home'),
-        backgroundColor: Colors.green.shade600, // Use a healthcare green color
+        title: const Text('Home'),
+        backgroundColor: Colors.green.shade600,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start, // Center the content
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome message
             Text(
               'Welcome, ${user?.email ?? "Guest"}!',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color:
-                    Colors
-                        .green
-                        .shade600, // Use a professional hospital green color
-                fontFamily: 'Roboto', // Use a modern, clean font (Roboto)
-              ),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.green.shade600),
             ),
-            SizedBox(height: 40),
-
-            // Description text (optional)
-            Text(
-              'Welcome to Healthcare, solution for healthcare',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black54, // Subtle dark color for the description
-              ),
-              textAlign: TextAlign.center, // Center align the text
-            ),
-            SizedBox(height: 40),
-
-            // Cards section
+            const SizedBox(height: 20),
             Expanded(
-              child: ListView(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 1.2,
                 children: [
-                  // Consult a doctor card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.medical_services,
-                        color: Colors.green.shade600,
-                      ),
-                      title: Text('Consult a doctor'),
-                      onTap: () {
-                        // Add navigation logic for consulting a doctor
-                      },
-                    ),
+                  _buildMenuItem(context, 'Hospitals', Icons.local_hospital, HospitalsPage()),
+                  _buildMenuItem(context, 'Medicines', Icons.local_pharmacy, MedicinesPage()),
+                  _buildMenuItem(
+                    context,
+                    'Book Appointment',
+                    Icons.calendar_today,
+                    BookAppointmentPage(userId: user?.uid ?? ''),
                   ),
-                  SizedBox(height: 16),
-
-                  // My medical history card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.history,
-                        color: Colors.green.shade600,
-                      ),
-                      title: Text('My medical history'),
-                      onTap: () {
-                        // Add navigation logic for medical history
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // My profile card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.account_circle,
-                        color: Colors.green.shade600,
-                      ),
-                      title: Text('My profile'),
-                      onTap: () {
-                        // Add navigation logic for profile
-                      },
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Buy Medicines card
-                  Card(
-                    elevation: 5,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: Icon(
-                        Icons.local_pharmacy,
-                        color: Colors.green.shade600,
-                      ),
-                      title: Text('Buy Medicines'),
-                      onTap: () {
-                        // Add navigation logic for buying medicines
-                      },
-                    ),
-                  ),
+                  _buildMenuItem(context, 'Profile', Icons.account_circle, ProfilePage()),
+                  // Only show 'Create Profile' if the profile doesn't exist
+                  if (!_isProfileCreated)
+                    _buildMenuItem(context, 'Create Profile', Icons.person_add, CreateProfilePage()),
                 ],
               ),
             ),
-
-            // Logout button (non-outlined, with border radius and enough size)
-            Container(
-              width:
-                  double.infinity, // Make button width span across the screen
-              height: 55, // Set enough height for button
+            const SizedBox(height: 20),
+            Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.green.shade600, // Green button background
-                  foregroundColor: Colors.white, // White text
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30), // Rounded corners
-                  ),
-                  elevation: 5, // Adds a floating effect
-                  textStyle: TextStyle(
-                    fontSize: 18,
-                  ), // Font size for button text
+                  backgroundColor: Colors.red.shade600,
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                 ),
                 onPressed: () async {
-                  // Sign out using the AuthService
-                  await _authService.signOut();
-                  // After signing out, navigate to the login screen or auth home
+                  await AuthService().signOut();
                   Navigator.pushReplacementNamed(context, '/auth');
                 },
-                child: Text(
-                  'Logout',
-                  style: TextStyle(
-                    color: Colors.white, // White text for contrast
-                  ),
-                ),
+                child: const Text('Logout', style: TextStyle(color: Colors.white, fontSize: 16)),
               ),
             ),
-            SizedBox(height: 20),
-
-            // Optional additional buttons or content can be added here, if needed
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem(BuildContext context, String title, IconData icon, Widget page) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => page)),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 4,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.green.shade50,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: Colors.green.shade600),
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.green.shade800),
+              ),
+            ],
+          ),
         ),
       ),
     );

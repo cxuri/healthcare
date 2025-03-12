@@ -16,8 +16,8 @@ class AuthService {
         password: password,
       );
       return userCredential;
-    } catch (e) {
-      print('Error during sign-up: $e');
+    } on FirebaseAuthException catch (e) {
+      print('Error during sign-up: ${e.message}');
       return null;
     }
   }
@@ -33,8 +33,8 @@ class AuthService {
         password: password,
       );
       return userCredential;
-    } catch (e) {
-      print('Error during sign-in: $e');
+    } on FirebaseAuthException catch (e) {
+      print('Error during sign-in: ${e.message}');
       return null;
     }
   }
@@ -58,10 +58,15 @@ class AuthService {
 
       final userCredential = await _auth.signInWithCredential(credential);
       return userCredential;
-    } catch (e) {
-      print('Error during Google sign-in: $e');
+    } on FirebaseAuthException catch (e) {
+      print('Error during Google sign-in: ${e.message}');
       return null;
     }
+  }
+
+  // Check if user is logged in
+  bool checkLogin() {
+    return _auth.currentUser != null;
   }
 
   // Sign out the user
